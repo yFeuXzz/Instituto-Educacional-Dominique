@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Attendance API</title>
+</head>
+<body>
+    <h1>Test Attendance API</h1>
+    <button onclick="testAttendance()">Test API</button>
+    <div id="result"></div>
+
+    <script>
+        async function testAttendance() {
+            const data = {
+                attendanceData: [
+                    {
+                        studentId: 'cmh18xp2h0000nussyzc4o6tl',
+                        classId: '7ano',
+                        date: '2025-10-22',
+                        status: 'present',
+                        observations: 'Teste de presença'
+                    }
+                ]
+            }
+
+            try {
+                console.log('Sending request:', data)
+                
+                const response = await fetch('/api/attendance', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                })
+
+                console.log('Response status:', response.status)
+                console.log('Response headers:', response.headers)
+
+                const result = await response.json()
+                console.log('Response data:', result)
+
+                document.getElementById('result').innerHTML = `
+                    <h3>Result:</h3>
+                    <p>Status: ${response.status}</p>
+                    <pre>${JSON.stringify(result, null, 2)}</pre>
+                `
+
+            } catch (error) {
+                console.error('Error:', error)
+                document.getElementById('result').innerHTML = `
+                    <h3>Error:</h3>
+                    <pre>${error.message}</pre>
+                `
+            }
+        }
+    </script>
+</body>
+</html>

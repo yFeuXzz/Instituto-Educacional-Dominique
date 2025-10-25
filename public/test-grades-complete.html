@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Notas - Instituto Dominique</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .test-section { margin-bottom: 30px; padding: 20px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+        .grade-item { background: #f9f9f9; padding: 10px; margin: 5px 0; border-radius: 5px; }
+        button { background: #007bff; color: white; padding: 10px 20px; border: none; cursor: pointer; margin: 5px; }
+        button:hover { background: #0056b3; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, select { width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏫 Instituto Educacional Dominique</h1>
+            <h2>📊 Sistema de Teste de Notas</h2>
+        </div>
+
+        <div class="test-section">
+            <h3>📋 Verificar Notas no Banco</h3>
+            <button onclick="loadGrades()">Carregar Notas do Banco</button>
+            <div id="gradesList"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>➕ Adicionar Nova Nota</h3>
+            <form id="gradeForm">
+                <div class="form-group">
+                    <label>Aluno:</label>
+                    <select id="studentId" required>
+                        <option value="">Selecione um aluno</option>
+                        <option value="cmgr7apdt0001qhcdmeevt3nj">João Pedro Santos</option>
+                        <option value="cmgr7bvjq0003qhcdpr27ukka">Juan Soares Amorim</option>
+                        <option value="cmgr7c2hq0005qhcd7a6k5d2s">Henrique Silva</option>
+                        <option value="cmgr7d6p00007qhcdm3q2x1g">Felipe Vieira</option>
+                        <option value="cmgr7e8r00009qhcdq7b1n2f">Maria Eduarda</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Matéria:</label>
+                    <select id="subject" required>
+                        <option value="">Selecione</option>
+                        <option value="matematica">Matemática</option>
+                        <option value="portugues">Português</option>
+                        <option value="ciencias">Ciências</option>
+                        <option value="historia">História</option>
+                        <option value="geografia">Geografia</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Série:</label>
+                    <select id="classId" required>
+                        <option value="">Selecione</option>
+                        <option value="6ano">6º Ano</option>
+                        <option value="7ano">7º Ano</option>
+                        <option value="8ano">8º Ano</option>
+                        <option value="9ano">9º Ano</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Bimestre:</label>
+                    <select id="bimester" required>
+                        <option value="">Selecione</option>
+                        <option value="1">1º Bimestre</option>
+                        <option value="2">2º Bimestre</option>
+                        <option value="3">3º Bimestre</option>
+                        <option value="4">4º Bimestre</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Nota 1:</label>
+                    <input type="number" id="note1" min="0" max="10" step="0.1">
+                </div>
+                
+                <div class="form-group">
+                    <label>Nota 2:</label>
+                    <input type="number" id="note2" min="0" max="10" step="0.1">
+                </div>
+                
+                <div class="form-group">
+                    <label>Nota 3:</label>
+                    <input type="number" id="note3" min="0" max="10" step="0.1">
+                </div>
+                
+                <button type="submit">💾 Salvar Nota</button>
+            </form>
+            <div id="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🔍 Diagnóstico do Sistema</h3>
+            <button onclick="runDiagnosis()">Executar Diagnóstico Completo</button>
+            <div id="diagnosis"></div>
+        </div>
+    </div>
+
+    <script>
+        async function loadGrades() {
+            const gradesList = document.getElementById('gradesList');
+            gradesList.innerHTML = '<p class="info">Carregando...</p>';
+            
+            try {
+                const response = await fetch('/api/grades');
+                const result = await response.json();
+                
+                if (result.success) {
+                    const grades = result.data;
+                    let html = `<h4 class="success">📊 Total de ${grades.length} notas encontradas:</h4>`;
+                    
+                    grades.forEach(grade => {
+                        html += `
+                            <div class="grade-item">
+                                <strong>${grade.studentName}</strong> - ${grade.subject}<br>
+                                📚 Série: ${grade.classId} | 📅 Bimestre: ${grade.bimester}<br>
+                                📝 Notas: ${grade.note1 || '-'} | ${grade.note2 || '-'} | ${grade.note3 || '-'}<br>
+                                📈 Média: ${grade.average?.toFixed(2) || 'N/A'}<br>
+                                ⏰ ${new Date(grade.gradedAt).toLocaleString('pt-BR')}
+                            </div>
+                        `;
+                    });
+                    
+                    gradesList.innerHTML = html;
+                } else {
+                    gradesList.innerHTML = `<p class="error">❌ Erro: ${result.error}</p>`;
+                }
+            } catch (error) {
+                gradesList.innerHTML = `<p class="error">❌ Erro ao carregar: ${error.message}</p>`;
+            }
+        }
+
+        document.getElementById('gradeForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = {
+                studentId: document.getElementById('studentId').value,
+                studentName: document.getElementById('studentId').options[document.getElementById('studentId').selectedIndex].text,
+                subject: document.getElementById('subject').value,
+                classId: document.getElementById('classId').value,
+                bimester: parseInt(document.getElementById('bimester').value),
+                note1: document.getElementById('note1').value ? parseFloat(document.getElementById('note1').value) : null,
+                note2: document.getElementById('note2').value ? parseFloat(document.getElementById('note2').value) : null,
+                note3: document.getElementById('note3').value ? parseFloat(document.getElementById('note3').value) : null
+            };
+            
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<p class="info">Salvando...</p>';
+            
+            try {
+                const response = await fetch('/api/grades', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ gradesData: [formData] })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h4>✅ Sucesso!</h4>
+                            <p>${result.message}</p>
+                            <p>ID: ${result.data.grades[0].id}</p>
+                            <p>Média: ${result.data.grades[0].average?.toFixed(2)}</p>
+                        </div>
+                    `;
+                    // Limpar formulário
+                    document.getElementById('gradeForm').reset();
+                    // Recarregar lista
+                    loadGrades();
+                } else {
+                    resultDiv.innerHTML = `<div class="error"><h4>❌ Erro!</h4><p>${result.error}</p></div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error"><h4>❌ Erro de conexão!</h4><p>${error.message}</p></div>`;
+            }
+        });
+
+        async function runDiagnosis() {
+            const diagnosisDiv = document.getElementById('diagnosis');
+            diagnosisDiv.innerHTML = '<p class="info">Executando diagnóstico...</p>';
+            
+            let html = '<h4>🔍 Resultados do Diagnóstico:</h4>';
+            
+            // Testar API GET
+            try {
+                const response = await fetch('/api/grades');
+                const result = await response.json();
+                html += `<p>✅ API GET: Funcionando (${result.data?.length || 0} notas)</p>`;
+            } catch (error) {
+                html += `<p>❌ API GET: Erro - ${error.message}</p>`;
+            }
+            
+            // Testar API POST
+            try {
+                const testResponse = await fetch('/api/grades', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        gradesData: [{
+                            studentId: 'test',
+                            studentName: 'TESTE DIAGNÓSTICO',
+                            subject: 'teste',
+                            classId: '7ano',
+                            bimester: 1,
+                            note1: 8.0,
+                            note2: 7.0,
+                            note3: 9.0
+                        }]
+                    })
+                });
+                const testResult = await testResponse.json();
+                html += `<p>✅ API POST: Funcionando (${testResult.success ? 'Sucesso' : 'Erro'})</p>`;
+            } catch (error) {
+                html += `<p>❌ API POST: Erro - ${error.message}</p>`;
+            }
+            
+            // Testar API Students
+            try {
+                const studentsResponse = await fetch('/api/students');
+                const studentsResult = await studentsResponse.json();
+                html += `<p>✅ API Students: Funcionando (${studentsResult.data?.length || 0} alunos)</p>`;
+            } catch (error) {
+                html += `<p>❌ API Students: Erro - ${error.message}</p>`;
+            }
+            
+            html += '<p>🔗 Links úteis:</p>';
+            html += '<p><a href="/login" target="_blank">🏫 Página de Login</a></p>';
+            html += '<p><a href="/admin" target="_blank">⚙️ Painel Admin</a></p>';
+            
+            diagnosisDiv.innerHTML = html;
+        }
+
+        // Carregar notas ao iniciar
+        loadGrades();
+    </script>
+</body>
+</html>
